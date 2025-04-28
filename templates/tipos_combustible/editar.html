@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h2>Editar Tipo de Combustible</h2>
+    <form action="{{ url_for('tipos_combustible.editar_tipo_combustible', id=tipo_combustible.TipoCombustibleID) }}" method="POST">
+        <div class="form-group">
+            <label for="tipo">Tipo de Combustible</label>
+            <input type="text" class="form-control" id="tipo" name="tipo" value="{{ tipo_combustible.Tipo }}" required>
+        </div>
+        <button type="submit" class="btn btn-save">
+            <i class="bi bi-save"></i> Guardar
+        </button>
+        <a href="{{ url_for('tipos_combustible.lista_tipos_combustible') }}" class="btn btn-cancel">
+            <i class="bi bi-x-circle"></i> Cancelar
+        </a>
+    </form>
+</div>
+{% endblock %}

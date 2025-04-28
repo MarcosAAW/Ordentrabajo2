@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <h2>Editar Motivo de Salida</h2>
+    <form action="{{ url_for('motivos_salida.editar_motivo_salida', id=motivo.MotivoID) }}" method="POST">
+        <div class="form-group">
+            <label for="descripcion">Descripción</label>
+            <input type="text" class="form-control" id="descripcion" name="descripcion" value="{{ motivo.Descripcion }}" maxlength="200" required>
+        </div>
+        <button type="submit" class="btn btn-save">
+            <i class="bi bi-save"></i> Guardar
+        </button>
+        <a href="{{ url_for('motivos_salida.lista_motivos_salida') }}" class="btn btn-cancel">
+            <i class="bi bi-x-circle"></i> Cancelar
+        </a>
+    </form>
+</div>
+{% endblock %} 

@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block content %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Lista de Registros de Uso de Vehículos</h2>
+    <a href="{{ url_for('registros_usos_vehiculos.crear_registro_uso_vehiculo') }}" class="btn btn-primary">
+        <i class="bi bi-plus-circle"></i> Crear Nuevo Registro
+    </a>
+</div> 
+
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Número Orden</th>
+                <th>Conductor</th>
+                <th>Autorizado por</th>
+                <th>Fecha de Salida</th>
+                <th>Fecha de Retorno</th>
+                <th>Motivo de Salida</th>
+                <th>Destino</th>
+                <th>Observaciones</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for registro in registros %}
+            <tr>
+                <td>{{ registro.NroOrden }}</td>
+                <td>{{ registro.NombreUsuario  }} {{ registro.ApellidoUsuario }}</td>
+                <td>{{ registro.NombreAutorizador }} {{ registro.ApellidoAutorizador }}</td>
+                <td>{{ registro.FechaSalida }}</td>
+                <td>{{ registro.FechaRetorno }}</td>
+                <td>{{ registro.MotivoDescripcion }}</td>
+                <td>{{ registro.Destino }}</td>
+                <td>{{ registro.Observaciones }}</td>
+                <td>
+                    <div class="d-flex gap-2">
+                        <a href="{{ url_for('registros_usos_vehiculos.editar_registro_uso_vehiculo', id=registro.RegistroID) }}" class="btn btn-sm btn-edit">
+                            <i class="bi bi-pencil"></i> Editar
+                        </a>
+                        <form action="{{ url_for('registros_usos_vehiculos.eliminar_registro_uso_vehiculo', id=registro.RegistroID) }}" method="POST">
+                            <button type="submit" class="btn btn-sm btn-danger">
+                                <i class="bi bi-trash"></i> Eliminar
+                            </button>
+                        </form>
+                        <a href="{{ url_for('registros_usos_vehiculos.detalle_registro_uso_vehiculo', id=registro.RegistroID) }}" class="btn btn-primary">
+                            <i class="bi bi-file-earmark-text"></i> Detalle
+                        </a>
+                    </div>
+                </td>
+            </tr> 
+            {% else %}
+            <tr>
+                <td colspan="2">No hay registros.</td> 
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

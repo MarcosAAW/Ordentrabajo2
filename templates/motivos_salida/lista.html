@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block content %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Lista de Motivos de Salida</h2>
+    <a href="{{ url_for('motivos_salida.crear_motivo_salida') }}" class="btn btn-primary">
+        <i class="bi bi-plus-circle"></i> Crear Nuevo Motivo
+    </a>
+</div> 
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Descripción</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for motivo in motivos %}
+            <tr>
+                <td>{{ motivo.Descripcion }}</td>
+                <td>
+                    <div class="d-flex gap-2">
+                        <a href="{{ url_for('motivos_salida.editar_motivo_salida', id=motivo.MotivoID) }}" class="btn btn-sm btn-edit">
+                            <i class="bi bi-pencil"></i> Editar
+                        </a>
+                        <form action="{{ url_for('motivos_salida.eliminar_motivo_salida', id=motivo.MotivoID) }}" method="POST">
+                            <button type="submit" class="btn btn-sm btn-danger">
+                                <i class="bi bi-trash"></i> Eliminar
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% else %} 
+            <tr>
+                <td colspan="2">No hay motivos de salida registrados.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

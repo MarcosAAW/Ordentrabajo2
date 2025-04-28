@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h2>Detalle del Registro de Uso de Vehículo</h2>
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">Número de Orden: {{ registro.NroOrden }}</h5>
+            <p class="card-text"><strong>Conductor:</strong> {{ registro.NombreUsuario }} {{ registro.ApellidoUsuario }}</p>
+            <p class="card-text"><strong>Autorizado por:</strong> {{ registro.NombreAutorizador }} {{ registro.ApellidoAutorizador }}</p>
+            <p class="card-text"><strong>Fecha de Salida:</strong> {{ registro.FechaSalida }}</p>
+            <p class="card-text"><strong>Fecha de Retorno:</strong> {{ registro.FechaRetorno }}</p>
+            <p class="card-text"><strong>Motivo de Salida:</strong> {{ registro.MotivoDescripcion }}</p>
+            <p class="card-text"><strong>Destino:</strong> {{ registro.Destino }}</p>
+            <p class="card-text"><strong>Observaciones:</strong> {{ registro.Observaciones }}</p>
+            <p class="card-text"><strong>RASP:</strong> {{ registro.RASP }}</p>
+        </div>
+    </div>
+    <a href="{{ url_for('registros_usos_vehiculos.lista_registros_usos_vehiculos') }}" class="btn btn-primary mt-3">
+        <i class="bi bi-arrow-left"></i> Volver a la Lista
+    </a>
+</div>
+{% endblock %}

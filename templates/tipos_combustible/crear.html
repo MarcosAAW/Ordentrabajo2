@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mb-4">Nuevo Tipo de Combustible</h2>
+    
+    <form method="POST" action="{{ url_for('tipos_combustible.crear_tipo_combustible') }}">
+        <div class="mb-3">
+            <label for="placa" class="form-label">Tipo</label>
+            <input type="text" class="form-control" id="tipo" name="tipo" required>
+        </div>       
+        <button type="submit" class="btn btn-save">
+            <i class="bi bi-save"></i> Guardar
+        </button>
+        <a href="{{ url_for('tipos_combustible.lista_tipos_combustible') }}" class="btn btn-cancel">
+            <i class="bi bi-x-circle"></i> Cancelar
+        </a>
+    </form>
+</div>
+{% endblock %} 

@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mb-4">Nuevo Vehículo</h2>
+    
+    <form method="POST" action="{{ url_for('vehiculos.crear_vehiculo') }}">
+        <div class="mb-3">
+            <label for="placa" class="form-label">Placa</label>
+            <input type="text" class="form-control" id="placa" name="placa" required>
+        </div>
+        
+        <div class="mb-3">
+            <label for="marca" class="form-label">Marca</label>
+            <input type="text" class="form-control" id="marca" name="marca" required>
+        </div>
+        
+        <div class="mb-3">
+            <label for="modelo" class="form-label">Modelo</label>
+            <input type="text" class="form-control" id="modelo" name="modelo" required>
+        </div>
+        
+        <div class="mb-3">
+            <label for="kilometraje" class="form-label">Kilometraje Actual</label>
+            <input type="number" step="0.01" class="form-control" id="kilometraje" name="kilometraje" required>
+        </div>
+        
+        <div class="mb-3">
+            <label for="tipo_combustible" class="form-label">Tipo de Combustible</label>
+            <select class="form-control" id="tipo_combustible" name="tipo_combustible" required>
+                {% for tipo in tipos_combustible %}
+                <option value="{{ tipo.TipoCombustibleID }}">{{ tipo.Tipo }}</option>
+                {% endfor %}
+            </select>
+        </div>   
+        <button type="submit" class="btn btn-save">
+            <i class="bi bi-save"></i> Guardar
+        </button>
+        <a href="{{ url_for('vehiculos.lista_vehiculos') }}" class="btn btn-cancel">
+            <i class="bi bi-x-circle"></i> Cancelar
+        </a>
+    </form>
+</div>
+{% endblock %} 

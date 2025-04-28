@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h2>Editar Registro de Uso de Vehículo</h2>
+    <form action="{{ url_for('registros_usos_vehiculos.editar_registro_uso_vehiculo', id=registro.RegistroID) }}" method="POST">
+        <div class="form-group">
+            <label for="NroOrden">Número de Orden</label>
+            <input type="text" class="form-control" id="NroOrden" name="NroOrden" value="{{ registro.NroOrden }}" maxlength="200" required>
+        </div>
+        <div class="form-group">
+            <label for="usuario_id">Conductor</label>
+            <select class="form-control" id="usuario_id" name="usuario_id" required>
+                {% for usuario in usuarios %}
+                <option value="{{ usuario.UsuarioID }}" {% if usuario.UsuarioID == registro.UsuarioID %}selected{% endif %}>
+                    {{ usuario.Nombre }} {{ usuario.Apellido }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="autorizado_por_id">Autorizado Por</label>
+            <select class="form-control" id="autorizado_por_id" name="autorizado_por_id" required>
+                {% for usuario in usuarios %}
+                <option value="{{ usuario.UsuarioID }}" {% if usuario.UsuarioID == registro.AutorizadoPorID %}selected{% endif %}>
+                    {{ usuario.Nombre }} {{ usuario.Apellido }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="RASP">RASP</label>
+            <input type="text" class="form-control" id="RASP" name="RASP" value="{{ registro.RASP }}" maxlength="200" required>
+        </div>
+        <div class="form-group">
+            <label for="vehiculo_id">Vehículo</label>
+            <select class="form-control" id="vehiculo_id" name="vehiculo_id" required>
+                {% for vehiculo in vehiculos %}
+                <option value="{{ vehiculo.VehiculoID }}" {% if vehiculo.VehiculoID == registro.VehiculoID %}selected{% endif %}>
+                    {{ vehiculo.Marca }} {{ vehiculo.Modelo }} - {{ vehiculo.Placa }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="fecha_salida">Fecha de Salida</label>
+            <input type="datetime-local" class="form-control" id="fecha_salida" name="fecha_salida" value="{{ registro.FechaSalida.strftime('%Y-%m-%dT%H:%M') }}" required>
+        </div>
+        <div class="form-group">
+            <label for="fecha_retorno">Fecha de Retorno</label>
+            <input type="datetime-local" class="form-control" id="fecha_retorno" name="fecha_retorno" value="{{ registro.FechaRetorno.strftime('%Y-%m-%dT%H:%M') }}" required>
+        </div>
+        <div class="form-group">
+            <label for="kilometraje_salida">Kilometraje de Salida</label>
+            <input type="number" class="form-control" id="kilometraje_salida" name="kilometraje_salida" value="{{ registro.KilometrajeSalida }}" step="0.1" required>
+        </div>
+        <div class="form-group">
+            <label for="kilometraje_retorno">Kilometraje de Retorno</label>
+            <input type="number" class="form-control" id="kilometraje_retorno" name="kilometraje_retorno" value="{{ registro.KilometrajeRetorno }}" step="0.1" required>
+        </div>
+        <div class="form-group">
+            <label for="combustible_utilizado">Combustible Utilizado (litros)</label>
+            <input type="number" class="form-control" id="combustible_utilizado" name="combustible_utilizado" value="{{ registro.CombustibleUtilizado }}" step="0.1" required>
+        </div>
+        <div class="form-group">
+            <label for="motivo_id">Motivo de Salida</label>
+            <select class="form-control" id="motivo_id" name="motivo_id" required>
+                {% for motivo in motivos %}
+                <option value="{{ motivo.MotivoID }}" {% if motivo.MotivoID == registro.MotivoID %}selected{% endif %}>
+                    {{ motivo.Descripcion }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>        
+        <div class="form-group">
+            <label for="destino">Destino</label>
+            <input type="text" class="form-control" id="destino" name="destino" value="{{ registro.Destino }}" maxlength="200" required>
+        </div>
+        <div class="form-group">
+            <label for="observaciones">Observaciones</label>
+            <textarea class="form-control" id="observaciones" name="observaciones" maxlength="1000" rows="4" required>{{ registro.Observaciones }}</textarea>
+        </div>
+        <button type="submit" class="btn btn-save">
+            <i class="bi bi-save"></i> Guardar
+        </button>
+        <a href="{{ url_for('registros_usos_vehiculos.lista_registros_usos_vehiculos') }}" class="btn btn-cancel">
+            <i class="bi bi-x-circle"></i> Cancelar
+        </a>
+    </form>
+</div>
+{% endblock %} 

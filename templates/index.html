@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="text-center mb-5">
+        <h1 class="display-4">Sistema de Control de Vehículos</h1>
+        <p class="lead">Bienvenido al sistema de administración de vehículos</p>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Registros de Uso</h5>
+                    <p class="card-text">Consulta los registros de uso de vehículos</p>
+                    <a href="{{ url_for('registros_usos_vehiculos.lista_registros_usos_vehiculos') }}" class="btn btn-primary">Ver Registros</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Vehículos</h5>
+                    <p class="card-text">Administra el registro de vehículos</p>
+                    <a href="{{ url_for('vehiculos.lista_vehiculos') }}" class="btn btn-primary">Ir a Vehículos</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Tipos de Combustible</h5>
+                    <p class="card-text">Gestiona los tipos de combustible</p>
+                    <a href="{{ url_for('tipos_combustible.lista_tipos_combustible') }}" class="btn btn-primary">Ir a Combustibles</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Usuarios</h5>
+                    <p class="card-text">Gestión de Usuarios</p>
+                    <a href="{{ url_for('usuarios.lista_usuarios') }}" class="btn btn-primary">Ir a Usuarios</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Motivos de Salida</h5>
+                    <p class="card-text">Administra los diferentes motivos de salida</p>
+                    <a href="{{ url_for('motivos_salida.lista_motivos_salida') }}" class="btn btn-primary">Ir a Motivos</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Administración</h5>
+                    <p class="card-text">Administra los usuarios del sistema</p>
+                    <a href="{{ url_for('login.list') }}" class="btn btn-primary">Administrar Usuarios</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
