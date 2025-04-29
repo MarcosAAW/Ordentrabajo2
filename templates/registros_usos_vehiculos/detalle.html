@@ -28,5 +28,8 @@
     <a href="{{ url_for('registros_usos_vehiculos.exportar_detalle_excel', id=registro.RegistroID) }}" class="btn btn-success mt-3">
         <i class="bi bi-file-earmark-excel"></i> Exportar a Excel
     </a>
+    <a href="{{ url_for('registros_usos_vehiculos.imprimir_detalle_pdf', id=registro.RegistroID) }}" class="btn btn-success mt-3" target="_blank">
+        <i class="bi bi-printer"></i> Imprimir Detalle
+    </a>
 </div>
 {% endblock %}

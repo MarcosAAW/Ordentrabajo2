@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Orden de Salida</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1, h2, h3 {
+            text-align: center;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+        .signature {
+            margin-top: 50px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .signature div {
+            text-align: center;
+            width: 45%;
+        }
+        .membrete {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .membrete img {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="membrete">
+        <img src="{{ url_for('static', filename='images/membrete.jpg') }}" alt="Membrete">
+    </div>
+
+    <h1>Orden de Salida</h1>
+    <h2>Número de Orden: {{ registro.NroOrden }}</h2>
+
+    <table>
+        <tr>
+            <th>Conductor</th>
+            <td>{{ registro.NombreUsuario }} {{ registro.ApellidoUsuario }}</td>
+        </tr>
+        <tr>
+            <th>Autorizado por</th>
+            <td>{{ registro.NombreAutorizador }} {{ registro.ApellidoAutorizador }}</td>
+        </tr>
+        <tr>
+            <th>RASP</th>
+            <td>{{ registro.RASP }}</td>
+        </tr>
+        <tr>
+            <th>Vehículo</th>
+            <td>{{ registro.Marca }} {{ registro.Modelo }}</td>
+        </tr>
+        <tr>
+            <th>Placa</th>
+            <td>{{ registro.Placa }}</td>
+        </tr>
+        <tr>
+            <th>Fecha de Salida</th>
+            <td>{{ registro.FechaSalida }}</td>
+        </tr>
+        <tr>
+            <th>Fecha de Retorno</th>
+            <td>{{ registro.FechaRetorno }}</td>
+        </tr>
+        <tr>
+            <th>Kilometraje de Salida</th>
+            <td>{{ registro.KilometrajeSalida }}</td>
+        </tr>
+        <tr>
+            <th>Kilometraje de Retorno</th>
+            <td>{{ registro.KilometrajeRetorno }}</td>
+        </tr>
+        <tr>
+            <th>Litros Cargados</th>
+            <td>{{ registro.LitrosCargados }}</td>
+        </tr>
+        <tr>
+            <th>Motivo de Salida</th>
+            <td>{{ registro.MotivoDescripcion }}</td>
+        </tr>
+        <tr>
+            <th>Destino</th>
+            <td>{{ registro.Destino }}</td>
+        </tr>
+        <tr>
+            <th>Observaciones</th>
+            <td>{{ registro.Observaciones }}</td>
+        </tr>
+    </table>
+
+    <div class="signature">
+        <div>
+            <p>__________________________</p>
+            <p>Firma del Conductor</p>
+        </div>
+        <div>
+            <p>__________________________</p>
+            <p>Firma del Autorizador</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -5,6 +5,9 @@ from sqlalchemy.orm import aliased
 from flask import send_file
 import pandas as pd
 import io
+from flask_weasyprint import HTML, render_pdf
+from flask import Response
+
 
 registros_usos_vehiculos_bp = Blueprint('registros_usos_vehiculos', __name__)
 
@@ -332,3 +335,49 @@ def exportar_lista_excel():
 
     # Enviar el archivo Excel como respuesta
     return send_file(output, as_attachment=True, download_name="Lista_Registros_Usos_Vehiculos.xlsx", mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+
+@registros_usos_vehiculos_bp.route('/registros_usos_vehiculos/detalle/<int:id>/imprimir_pdf', methods=['GET'])
+def imprimir_detalle_pdf(id):
+    # Crear alias para el usuario que autoriza
+    Autorizador = aliased(UsuariosVehiculos)
+
+    # Obtener los datos del registro
+    registro = db.session.query(
+        RegistrosUsoVehiculos.FechaSalida,
+        RegistrosUsoVehiculos.FechaRetorno,
+        RegistrosUsoVehiculos.Destino,
+        RegistrosUsoVehiculos.Observaciones,
+        RegistrosUsoVehiculos.RASP,
+        RegistrosUsoVehiculos.NroOrden,
+        RegistrosUsoVehiculos.KilometrajeSalida,
+        RegistrosUsoVehiculos.KilometrajeRetorno,
+        RegistrosUsoVehiculos.CombustibleUtilizado.label('LitrosCargados'),
+        Vehiculo.Marca,
+        Vehiculo.Modelo,
+        Vehiculo.Placa,
+        UsuariosVehiculos.Nombre.label('NombreUsuario'),
+        UsuariosVehiculos.Apellido.label('ApellidoUsuario'),
+        Autorizador.Nombre.label('NombreAutorizador'),
+        Autorizador.Apellido.label('ApellidoAutorizador'),
+        MotivosSalida.Descripcion.label('MotivoDescripcion')
+    ).join(Vehiculo, RegistrosUsoVehiculos.VehiculoID == Vehiculo.VehiculoID) \
+     .join(UsuariosVehiculos, RegistrosUsoVehiculos.UsuarioID == UsuariosVehiculos.UsuarioID) \
+     .join(Autorizador, RegistrosUsoVehiculos.AutorizadoPorID == Autorizador.UsuarioID) \
+     .join(MotivosSalida, RegistrosUsoVehiculos.MotivoID == MotivosSalida.MotivoID) \
+     .filter(RegistrosUsoVehiculos.RegistroID == id) \
+     .first()
+
+    if not registro:
+        flash('El registro no existe.', 'error')
+        return redirect(url_for('registros_usos_vehiculos.lista_registros_usos_vehiculos'))
+
+    # Renderizar el HTML para el PDF
+    html = render_template('registros_usos_vehiculos/informe_pdf.html', registro=registro)
+
+    # Generar el PDF
+    pdf = HTML(string=html).write_pdf()
+
+    # Crear la respuesta con el encabezado 'inline'
+    response = Response(pdf, content_type='application/pdf')
+    response.headers['Content-Disposition'] = 'inline; filename=Detalle_Registro.pdf'
+    return response
