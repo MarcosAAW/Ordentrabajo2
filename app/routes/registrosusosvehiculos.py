@@ -2,38 +2,65 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash
 from app.models import db, RegistrosUsoVehiculos, Vehiculo, UsuariosVehiculos, MotivosSalida
 from datetime import datetime
 from sqlalchemy.orm import aliased
+from flask import send_file
+import pandas as pd
+import io
 
 registros_usos_vehiculos_bp = Blueprint('registros_usos_vehiculos', __name__)
 
 
-@registros_usos_vehiculos_bp.route('/registros_usos_vehiculos')
+@registros_usos_vehiculos_bp.route('/registros_usos_vehiculos', methods=['GET'])
 def lista_registros_usos_vehiculos():
-
     # Crear alias para el usuario que autoriza
     Autorizador = aliased(UsuariosVehiculos)
 
-    registros = db.session.query(
-    RegistrosUsoVehiculos.RegistroID,
-    RegistrosUsoVehiculos.FechaSalida,
-    RegistrosUsoVehiculos.FechaRetorno,
-    RegistrosUsoVehiculos.KilometrajeSalida,
-    RegistrosUsoVehiculos.KilometrajeRetorno,
-    RegistrosUsoVehiculos.CombustibleUtilizado,
-    RegistrosUsoVehiculos.Destino,
-    RegistrosUsoVehiculos.Observaciones,
-    RegistrosUsoVehiculos.RASP,
-    RegistrosUsoVehiculos.NroOrden,
-    Vehiculo.Placa.label('PlacaVehiculo'),
-    UsuariosVehiculos.Nombre.label('NombreUsuario'),
-    UsuariosVehiculos.Apellido.label('ApellidoUsuario'),
-    Autorizador.Nombre.label('NombreAutorizador'),
-    Autorizador.Apellido.label('ApellidoAutorizador'),
-    MotivosSalida.Descripcion.label('MotivoDescripcion'),
-).join(Vehiculo, RegistrosUsoVehiculos.VehiculoID == Vehiculo.VehiculoID) \
- .join(UsuariosVehiculos, RegistrosUsoVehiculos.UsuarioID == UsuariosVehiculos.UsuarioID) \
- .join(Autorizador, RegistrosUsoVehiculos.AutorizadoPorID == Autorizador.UsuarioID) \
- .join(MotivosSalida, RegistrosUsoVehiculos.MotivoID == MotivosSalida.MotivoID) \
- .all()
+    # Obtener los parámetros del filtro
+    nro_orden = request.args.get('nro_orden', '').strip()
+    conductor = request.args.get('conductor', '').strip()
+    autorizado_por = request.args.get('autorizado_por', '').strip()
+    destino = request.args.get('destino', '').strip()
+
+    # Construir la consulta base
+    query = db.session.query(
+        RegistrosUsoVehiculos.RegistroID,
+        RegistrosUsoVehiculos.FechaSalida,
+        RegistrosUsoVehiculos.FechaRetorno,
+        RegistrosUsoVehiculos.KilometrajeSalida,
+        RegistrosUsoVehiculos.KilometrajeRetorno,
+        RegistrosUsoVehiculos.CombustibleUtilizado,
+        RegistrosUsoVehiculos.Destino,
+        RegistrosUsoVehiculos.Observaciones,
+        RegistrosUsoVehiculos.RASP,
+        RegistrosUsoVehiculos.NroOrden,
+        Vehiculo.Placa.label('PlacaVehiculo'),
+        UsuariosVehiculos.Nombre.label('NombreUsuario'),
+        UsuariosVehiculos.Apellido.label('ApellidoUsuario'),
+        Autorizador.Nombre.label('NombreAutorizador'),
+        Autorizador.Apellido.label('ApellidoAutorizador'),
+        MotivosSalida.Descripcion.label('MotivoDescripcion'),
+    ).join(Vehiculo, RegistrosUsoVehiculos.VehiculoID == Vehiculo.VehiculoID) \
+     .join(UsuariosVehiculos, RegistrosUsoVehiculos.UsuarioID == UsuariosVehiculos.UsuarioID) \
+     .join(Autorizador, RegistrosUsoVehiculos.AutorizadoPorID == Autorizador.UsuarioID) \
+     .join(MotivosSalida, RegistrosUsoVehiculos.MotivoID == MotivosSalida.MotivoID)
+
+    # Aplicar filtros si se proporcionan
+    if nro_orden:
+        query = query.filter(RegistrosUsoVehiculos.NroOrden.ilike(f"%{nro_orden}%"))
+    if conductor:
+        query = query.filter(
+            (UsuariosVehiculos.Nombre.ilike(f"%{conductor}%")) |
+            (UsuariosVehiculos.Apellido.ilike(f"%{conductor}%"))
+        )
+    if autorizado_por:
+        query = query.filter(
+            (Autorizador.Nombre.ilike(f"%{autorizado_por}%")) |
+            (Autorizador.Apellido.ilike(f"%{autorizado_por}%"))
+        )
+    if destino:
+        query = query.filter(RegistrosUsoVehiculos.Destino.ilike(f"%{destino}%"))
+
+    # Ejecutar la consulta
+    registros = query.all()
 
     return render_template('registros_usos_vehiculos/lista.html', registros=registros)
 
@@ -151,18 +178,26 @@ def detalle_registro_uso_vehiculo(id):
 
     # Realizar las uniones necesarias para obtener los datos relacionados
     registro = db.session.query(
+        RegistrosUsoVehiculos.RegistroID,  # Asegúrate de incluir RegistroID
         RegistrosUsoVehiculos.FechaSalida,
         RegistrosUsoVehiculos.FechaRetorno,
         RegistrosUsoVehiculos.Destino,
         RegistrosUsoVehiculos.Observaciones,
         RegistrosUsoVehiculos.RASP,
         RegistrosUsoVehiculos.NroOrden,
+        RegistrosUsoVehiculos.KilometrajeSalida,
+        RegistrosUsoVehiculos.KilometrajeRetorno,
+        RegistrosUsoVehiculos.CombustibleUtilizado.label('LitrosCargados'),
+        Vehiculo.Marca,
+        Vehiculo.Modelo,
+        Vehiculo.Placa,
         UsuariosVehiculos.Nombre.label('NombreUsuario'),
         UsuariosVehiculos.Apellido.label('ApellidoUsuario'),
         Autorizador.Nombre.label('NombreAutorizador'),
         Autorizador.Apellido.label('ApellidoAutorizador'),
         MotivosSalida.Descripcion.label('MotivoDescripcion')
-    ).join(UsuariosVehiculos, RegistrosUsoVehiculos.UsuarioID == UsuariosVehiculos.UsuarioID) \
+    ).join(Vehiculo, RegistrosUsoVehiculos.VehiculoID == Vehiculo.VehiculoID) \
+     .join(UsuariosVehiculos, RegistrosUsoVehiculos.UsuarioID == UsuariosVehiculos.UsuarioID) \
      .join(Autorizador, RegistrosUsoVehiculos.AutorizadoPorID == Autorizador.UsuarioID) \
      .join(MotivosSalida, RegistrosUsoVehiculos.MotivoID == MotivosSalida.MotivoID) \
      .filter(RegistrosUsoVehiculos.RegistroID == id) \
@@ -174,3 +209,126 @@ def detalle_registro_uso_vehiculo(id):
 
     # Renderizar la plantilla de detalle
     return render_template('registros_usos_vehiculos/detalle.html', registro=registro)
+
+@registros_usos_vehiculos_bp.route('/registros_usos_vehiculos/detalle/<int:id>/exportar_excel', methods=['GET'])
+def exportar_detalle_excel(id):
+    # Crear alias para el usuario que autoriza
+    Autorizador = aliased(UsuariosVehiculos)
+
+    # Obtener los datos del registro
+    registro = db.session.query(
+        RegistrosUsoVehiculos.FechaSalida,
+        RegistrosUsoVehiculos.FechaRetorno,
+        RegistrosUsoVehiculos.Destino,
+        RegistrosUsoVehiculos.Observaciones,
+        RegistrosUsoVehiculos.RASP,
+        RegistrosUsoVehiculos.NroOrden,
+        RegistrosUsoVehiculos.KilometrajeSalida,
+        RegistrosUsoVehiculos.KilometrajeRetorno,
+        RegistrosUsoVehiculos.CombustibleUtilizado.label('LitrosCargados'),
+        Vehiculo.Marca,
+        Vehiculo.Modelo,
+        Vehiculo.Placa,
+        UsuariosVehiculos.Nombre.label('NombreUsuario'),
+        UsuariosVehiculos.Apellido.label('ApellidoUsuario'),
+        Autorizador.Nombre.label('NombreAutorizador'),
+        Autorizador.Apellido.label('ApellidoAutorizador'),
+        MotivosSalida.Descripcion.label('MotivoDescripcion')
+    ).join(Vehiculo, RegistrosUsoVehiculos.VehiculoID == Vehiculo.VehiculoID) \
+     .join(UsuariosVehiculos, RegistrosUsoVehiculos.UsuarioID == UsuariosVehiculos.UsuarioID) \
+     .join(Autorizador, RegistrosUsoVehiculos.AutorizadoPorID == Autorizador.UsuarioID) \
+     .join(MotivosSalida, RegistrosUsoVehiculos.MotivoID == MotivosSalida.MotivoID) \
+     .filter(RegistrosUsoVehiculos.RegistroID == id) \
+     .first()
+
+    if not registro:
+        flash('El registro no existe.', 'error')
+        return redirect(url_for('registros_usos_vehiculos.lista_registros_usos_vehiculos'))
+
+    # Convertir los datos a un DataFrame de pandas
+    data = {
+        'Número de Orden': [registro.NroOrden],
+        'Conductor': [f"{registro.NombreUsuario} {registro.ApellidoUsuario}"],
+        'Autorizado por': [f"{registro.NombreAutorizador} {registro.ApellidoAutorizador}"],
+        'RASP': [registro.RASP],
+        'Vehículo': [f"{registro.Marca} {registro.Modelo}"],
+        'Placa': [registro.Placa],
+        'Fecha de Salida': [registro.FechaSalida],
+        'Fecha de Retorno': [registro.FechaRetorno],
+        'Kilometraje de Salida': [registro.KilometrajeSalida],
+        'Kilometraje de Retorno': [registro.KilometrajeRetorno],
+        'Litros Cargados': [registro.LitrosCargados],
+        'Motivo de Salida': [registro.MotivoDescripcion],
+        'Destino': [registro.Destino],
+        'Observaciones': [registro.Observaciones]
+    }
+    df = pd.DataFrame(data)
+
+    # Guardar el DataFrame en un archivo Excel en memoria
+    output = io.BytesIO()
+    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+        df.to_excel(writer, index=False, sheet_name='Detalle')
+    output.seek(0)
+
+    # Enviar el archivo Excel como respuesta
+    return send_file(output, as_attachment=True, download_name=f"Detalle_Registro_{registro.NroOrden}.xlsx", mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+
+#Para exportar la lista completa, el de arriba es solo para un unico detalle
+@registros_usos_vehiculos_bp.route('/registros_usos_vehiculos/exportar_lista_excel', methods=['GET'])
+def exportar_lista_excel():
+   # Crear alias para el usuario que autoriza
+    Autorizador = aliased(UsuariosVehiculos)
+
+    # Obtener todos los registros
+    registros = db.session.query(
+        RegistrosUsoVehiculos.FechaSalida,
+        RegistrosUsoVehiculos.FechaRetorno,
+        RegistrosUsoVehiculos.Destino,
+        RegistrosUsoVehiculos.Observaciones,
+        RegistrosUsoVehiculos.RASP,
+        RegistrosUsoVehiculos.NroOrden,
+        RegistrosUsoVehiculos.KilometrajeSalida,
+        RegistrosUsoVehiculos.KilometrajeRetorno,
+        RegistrosUsoVehiculos.CombustibleUtilizado.label('LitrosCargados'),
+        Vehiculo.Marca,
+        Vehiculo.Modelo,
+        Vehiculo.Placa,
+        UsuariosVehiculos.Nombre.label('NombreUsuario'),
+        UsuariosVehiculos.Apellido.label('ApellidoUsuario'),
+        Autorizador.Nombre.label('NombreAutorizador'),
+        Autorizador.Apellido.label('ApellidoAutorizador'),
+        MotivosSalida.Descripcion.label('MotivoDescripcion')
+    ).join(Vehiculo, RegistrosUsoVehiculos.VehiculoID == Vehiculo.VehiculoID) \
+     .join(UsuariosVehiculos, RegistrosUsoVehiculos.UsuarioID == UsuariosVehiculos.UsuarioID) \
+     .join(Autorizador, RegistrosUsoVehiculos.AutorizadoPorID == Autorizador.UsuarioID) \
+     .join(MotivosSalida, RegistrosUsoVehiculos.MotivoID == MotivosSalida.MotivoID) \
+     .all()
+
+    # Convertir los datos a un DataFrame de pandas
+    data = [{
+        'Número de Orden': registro.NroOrden,
+        'Conductor': f"{registro.NombreUsuario} {registro.ApellidoUsuario}",
+        'Autorizado por': f"{registro.NombreAutorizador} {registro.ApellidoAutorizador}",
+        'RASP': registro.RASP,
+        'Vehículo': f"{registro.Marca} {registro.Modelo}",
+        'Placa': registro.Placa,
+        'Fecha de Salida': registro.FechaSalida,
+        'Fecha de Retorno': registro.FechaRetorno,
+        'Kilometraje de Salida': registro.KilometrajeSalida,
+        'Kilometraje de Retorno': registro.KilometrajeRetorno,
+        'Litros Cargados': registro.LitrosCargados,
+        'Motivo de Salida': registro.MotivoDescripcion,
+        'Destino': registro.Destino,
+        'Observaciones': registro.Observaciones
+    } for registro in registros]
+
+    df = pd.DataFrame(data)
+
+    # Guardar el DataFrame en un archivo Excel en memoria
+    output = io.BytesIO()
+    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+        df.to_excel(writer, index=False, sheet_name='Lista de Registros')
+    output.seek(0)
+
+    # Enviar el archivo Excel como respuesta
+    return send_file(output, as_attachment=True, download_name="Lista_Registros_Usos_Vehiculos.xlsx", mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')

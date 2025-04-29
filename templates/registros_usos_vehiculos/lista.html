@@ -1,15 +1,52 @@
 {% extends "base.html" %}
 
 {% block content %}
-<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
 
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2>Lista de Registros de Uso de Vehículos</h2>
+</div>
+<div class="d-flex gap-2 mb-4">
     <a href="{{ url_for('registros_usos_vehiculos.crear_registro_uso_vehiculo') }}" class="btn btn-primary">
         <i class="bi bi-plus-circle"></i> Crear Nuevo Registro
     </a>
-</div> 
+    <a href="{{ url_for('registros_usos_vehiculos.exportar_lista_excel') }}" class="btn btn-success">
+        <i class="bi bi-file-earmark-excel"></i> Exportar Lista a Excel
+    </a>
+</div>
+
+<!-- Formulario de filtro -->
+<form method="GET" action="{{ url_for('registros_usos_vehiculos.lista_registros_usos_vehiculos') }}" class="mb-4">
+    <div class="row">
+        <div class="col-md-2">
+            <input type="text" name="nro_orden" class="form-control" placeholder="Número de Orden" value="{{ request.args.get('nro_orden', '') }}">
+        </div>
+        <div class="col-md-2">
+            <input type="text" name="conductor" class="form-control" placeholder="Conductor" value="{{ request.args.get('conductor', '') }}">
+        </div>
+        <div class="col-md-2">
+            <input type="text" name="autorizado_por" class="form-control" placeholder="Autorizado por" value="{{ request.args.get('autorizado_por', '') }}">
+        </div>
+        <div class="col-md-2">
+            <input type="text" name="destino" class="form-control" placeholder="Destino" value="{{ request.args.get('destino', '') }}">
+        </div>
+        <div class="col-md-3">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-search"></i> Filtrar
+            </button>
+        </div>
+    </div>
+</form>
 
 <div class="table-responsive">
     <table class="table table-striped">
